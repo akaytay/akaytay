@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Form Kayıt</title>
+</head>
+<body>
+    <h2>Kullanıcı Girişi</h2>
+    <input type="email" id="email" placeholder="E-posta" required>
+    <input type="password" id="password" placeholder="Şifre" required>
+    <button id="loginBtn">Giriş Yap</button>
+    <button id="logoutBtn">Çıkış Yap</button>
+    
+    <h2>Form</h2>
+    <form id="myForm" style="display:none;">  <!-- Başta form gizli olacak -->
+        <input type="text" id="name" placeholder="Adınız" required>
+        <button type="submit">Kaydet</button>
+    </form>
+
+    <script type="module">
+        // Firebase SDK'ları ekleme
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBPuLg2Wr4mK_Jl9zVNXy4Y1jWjYed5oL4",
+            authDomain: "webform-38b4b.firebaseapp.com",
+            databaseURL: "https://webform-38b4b-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "webform-38b4b",
+            storageBucket: "webform-38b4b.firebasestorage.app",
+            messagingSenderId: "136827777485",
+            appId: "1:136827777485:web:60bc0153eec2f478b75484",
+            measurementId: "G-5V44FR4TRH"
+        };
+
+        // Firebase başlatma
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const auth = getAuth(app);
+
+        // Kullanıcı durumu değiştiğinde formu göster/gizle
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById("myForm").style.display = "block"; // Giriş yapan kullanıcıya formu göster
+            } else {
+                document.getElementById("myForm").style.display = "none"; // Çıkış yapan kullanıcıya formu gizle
+            }
+        });
+
+        // Kullanıcı giriş işlemi
+        document.getElementById("loginBtn").addEventListener("click", function() {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    alert("Giriş başarılı!");
+                })
+                .catch((error) => {
+                    alert("Giriş başarısız: " + error.message);
+                });
+        });
+
+        // Kullanıcı çıkış işlemi
+        document.getElementById("logoutBtn").addEventListener("click", function() {
+            signOut(auth).then(() => {
+                alert("Çıkış yapıldı!");
+            }).catch((error) => {
+                alert("Çıkış hatası: " + error.message);
+            });
+        });
+
+        // Form submit işlemi (Kayıt ekleme)
+        document.getElementById("myForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const name = document.getElementById("name").value;
+            const user = auth.currentUser;
+
+            if (user) { // Kullanıcı giriş yapmış mı?
+                push(ref(database, 'users/'), {
+                    name: name,
+                    email: user.email
+                }).then(() => alert("Veri kaydedildi!"))
+                .catch(error => alert("Hata oluştu: " + error.message));
+            } else {
+                alert("Önce giriş yapmalısınız!");
+            }
+        });
+    </script>
+</body>
+</html>
