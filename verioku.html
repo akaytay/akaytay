@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Veri Okuma</title>
+</head>
+<body>
+    <h2>Kayıtlı Kullanıcılar</h2>
+    <ul id="userList"></ul> <!-- Kullanıcıları buraya ekleyeceğiz -->
+
+    <script type="module">
+        // Firebase SDK'ları ekleme
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getDatabase, ref, get, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+
+        // Firebase config (Senin bilgilerin burada olacak)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBPuLg2Wr4mK_Jl9zVNXy4Y1jWjYed5oL4",
+            authDomain: "webform-38b4b.firebaseapp.com",
+            databaseURL: "https://webform-38b4b-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "webform-38b4b",
+            storageBucket: "webform-38b4b.firebasestorage.app",
+            messagingSenderId: "136827777485",
+            appId: "1:136827777485:web:60bc0153eec2f478b75484",
+            measurementId: "G-5V44FR4TRH"
+        };
+
+        // Firebase başlatma
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Kullanıcı listesini alacağımız referans
+        const usersRef = ref(database, 'users');
+
+        // 📌 1. Yöntem: `get()` ile Tek Seferlik Veri Okuma
+        get(usersRef).then((snapshot) => {
+            if (snapshot.exists()) {
+                const users = snapshot.val();
+                displayUsers(users);
+            } else {
+                console.log("Veri bulunamadı!");
+            }
+        }).catch((error) => {
+            console.error("Hata: ", error);
+        });
+
+        // 📌 2. Yöntem: `onValue()` ile Sürekli Güncellenen Okuma
+        onValue(usersRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const users = snapshot.val();
+                displayUsers(users);
+            } else {
+                console.log("Veri bulunamadı!");
+            }
+        });
+
+        // Kullanıcıları HTML listesine ekleme fonksiyonu
+        function displayUsers(users) {
+            const userList = document.getElementById("userList");
+            userList.innerHTML = ""; // Önce listeyi temizle
+            Object.keys(users).forEach((key) => {
+                const user = users[key];
+                const listItem = document.createElement("li");
+                listItem.textContent = `Ad: ${user.name} - Email: ${user.email}`;
+                userList.appendChild(listItem);
+            });
+        }
+    </script>
+</body>
+</html>
