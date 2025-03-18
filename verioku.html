@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Firebase Giriş & Veri Okuma</title>
 </head>
+
 <body>
 
     <!-- Giriş Formu -->
@@ -23,9 +25,9 @@
 
     <script type="module">
         // Firebase SDK'ları ekleme
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getDatabase, ref, get, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, get, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         // Firebase config (Senin bilgilerin burada olacak)
         const firebaseConfig = {
@@ -48,7 +50,7 @@
         const usersRef = ref(database, 'users');
 
         // Giriş formunu dinleme
-        document.getElementById("loginForm").addEventListener("submit", function(event) {
+        document.getElementById("loginForm").addEventListener("submit", function (event) {
             event.preventDefault();
             const email = document.getElementById("email").value;
             const password = document.getElementById("password").value;
@@ -66,7 +68,7 @@
         });
 
         // Çıkış yapma butonu
-        document.getElementById("logoutButton").addEventListener("click", function() {
+        document.getElementById("logoutButton").addEventListener("click", function () {
             signOut(auth).then(() => {
                 alert("Çıkış yapıldı!");
                 document.getElementById("logoutButton").style.display = "none";
@@ -111,4 +113,5 @@
         }
     </script>
 </body>
+
 </html>
