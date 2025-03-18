@@ -3,20 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase Veri Okuma</title>
+    <title>Firebase Giriş & Veri Okuma</title>
 </head>
 <body>
+
+    <!-- Giriş Formu -->
+    <h2>Giriş Yap</h2>
+    <form id="loginForm">
+        <input type="email" id="email" placeholder="E-posta" required><br>
+        <input type="password" id="password" placeholder="Şifre" required><br>
+        <button type="submit">Giriş Yap</button>
+    </form>
+
+    <button id="logoutButton" style="display:none;">Çıkış Yap</button>
+
+    <!-- Kullanıcı Listesi -->
     <h2>Kayıtlı Kullanıcılar</h2>
-    <ul id="userList"></ul> <!-- Kullanıcıları buraya ekleyeceğiz -->
+    <ul id="userList"></ul>
 
     <script type="module">
         // Firebase SDK'ları ekleme
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
         import { getDatabase, ref, get, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
         // Firebase config (Senin bilgilerin burada olacak)
         const firebaseConfig = {
-            apiKey: "AIzaSyBPuLg2Wr4mK_Jl9zVNXy4Y1jWjYed5oL4",
+            apiKey: "AIzaSyBPuLg2Wr4M_Jl9zVNXy4Y1jWjYed5oL4",
             authDomain: "webform-38b4b.firebaseapp.com",
             databaseURL: "https://webform-38b4b-default-rtdb.europe-west1.firebasedatabase.app",
             projectId: "webform-38b4b",
@@ -29,41 +42,71 @@
         // Firebase başlatma
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
+        const auth = getAuth();
 
         // Kullanıcı listesini alacağımız referans
         const usersRef = ref(database, 'users');
 
-        // 📌 1. Yöntem: `get()` ile Tek Seferlik Veri Okuma
-        get(usersRef).then((snapshot) => {
-            if (snapshot.exists()) {
-                const users = snapshot.val();
-                displayUsers(users);
-            } else {
-                console.log("Veri bulunamadı!");
-            }
-        }).catch((error) => {
-            console.error("Hata: ", error);
+        // Giriş formunu dinleme
+        document.getElementById("loginForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    console.log("Giriş başarılı:", userCredential.user);
+                    alert("Giriş başarılı!");
+                    showUserList(); // Kullanıcıları göster
+                })
+                .catch((error) => {
+                    console.error("Giriş hatası:", error);
+                    alert("Hata: " + error.message);
+                });
         });
 
-        // 📌 2. Yöntem: `onValue()` ile Sürekli Güncellenen Okuma
-        onValue(usersRef, (snapshot) => {
-            if (snapshot.exists()) {
-                const users = snapshot.val();
-                displayUsers(users);
+        // Çıkış yapma butonu
+        document.getElementById("logoutButton").addEventListener("click", function() {
+            signOut(auth).then(() => {
+                alert("Çıkış yapıldı!");
+                document.getElementById("logoutButton").style.display = "none";
+                document.getElementById("userList").innerHTML = ""; // Listeyi temizle
+            }).catch((error) => {
+                console.error("Çıkış hatası:", error);
+            });
+        });
+
+        // Kullanıcı giriş yapmış mı kontrol et
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log("Kullanıcı giriş yaptı:", user);
+                document.getElementById("logoutButton").style.display = "block";
+                showUserList(); // Kullanıcıları göster
             } else {
-                console.log("Veri bulunamadı!");
+                console.log("Kullanıcı giriş yapmadı.");
+                document.getElementById("logoutButton").style.display = "none";
+                document.getElementById("userList").innerHTML = "";
             }
         });
 
         // Kullanıcıları HTML listesine ekleme fonksiyonu
-        function displayUsers(users) {
-            const userList = document.getElementById("userList");
-            userList.innerHTML = ""; // Önce listeyi temizle
-            Object.keys(users).forEach((key) => {
-                const user = users[key];
-                const listItem = document.createElement("li");
-                listItem.textContent = `Ad: ${user.name} - Email: ${user.email}`;
-                userList.appendChild(listItem);
+        function showUserList() {
+            get(usersRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    const users = snapshot.val();
+                    const userList = document.getElementById("userList");
+                    userList.innerHTML = ""; // Önce listeyi temizle
+                    Object.keys(users).forEach((key) => {
+                        const user = users[key];
+                        const listItem = document.createElement("li");
+                        listItem.textContent = `Ad: ${user.name} - Email: ${user.email}`;
+                        userList.appendChild(listItem);
+                    });
+                } else {
+                    console.log("Veri bulunamadı!");
+                }
+            }).catch((error) => {
+                console.error("Hata:", error);
             });
         }
     </script>
